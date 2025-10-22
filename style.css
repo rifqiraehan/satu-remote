@@ -9,3 +9,11 @@ body {
 .add-device {
   @apply border-2 border-dashed border-gray-400 rounded-xl py-8 text-center text-gray-500 hover:bg-gray-100 cursor-pointer transition;
 }
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}

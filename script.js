@@ -45,6 +45,7 @@ function pageHome() {
     ${modalDeviceDetail()}
     ${modalConfirmDelete()}
     ${modalButtonForm()}
+    ${modalLearningGuide()}
   `;
 }
 
@@ -159,7 +160,56 @@ function goToLearningWithButtons() {
   devices.push({ name, buttons: selectedButtons });
   localStorage.setItem("devices", JSON.stringify(devices));
   hideButtonForm();
-  goToLearningMode(name, selectedButtons);
+
+  window.tempLearningData = { name, buttons: selectedButtons };
+  showLearningGuide();
+}
+
+// modal panduan sebelum learning
+function modalLearningGuide() {
+  return `
+    <div id="modalGuide" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-3xl p-6 w-96 shadow-xl text-[#1A434E] text-center relative animate-fade-in">
+        <button onclick="hideLearningGuide()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
+
+        <!-- Judul dan teks -->
+        <h3 class="text-xl font-semibold mb-2">Siap untuk Mode Learning?</h3>
+        <p class="text-sm text-gray-600 mb-5 leading-relaxed">
+          Sebelum memulai, pastikan:
+        </p>
+
+        <ul class="text-sm text-left text-gray-700 mb-5 space-y-2 list-disc list-inside">
+          <li>Remote asli sudah disiapkan dan berfungsi.</li>
+          <li>Posisikan remote menghadap Modul Satu Remote.</li>
+          <li>Tekan tombol sesuai instruksi di layar nanti.</li>
+        </ul>
+
+        <!-- Tombol -->
+        <div class="flex justify-center gap-3 mt-2">
+          <button onclick="hideLearningGuide()" class="px-4 py-2 rounded-lg border hover:bg-gray-50">
+            Batal
+          </button>
+          <button onclick="startLearning()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
+            Mulai Learning →
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function showLearningGuide() {
+  document.getElementById("modalGuide").classList.remove("hidden");
+}
+
+function hideLearningGuide() {
+  document.getElementById("modalGuide").classList.add("hidden");
+}
+
+function startLearning() {
+  const { name, buttons } = window.tempLearningData;
+  hideLearningGuide();
+  goToLearningMode(name, buttons);
 }
 
 // halaman mode learning
@@ -195,12 +245,27 @@ function pageRemote() {
 
   return `
     <div class="text-center text-[#1A434E] px-6">
-      <h3 class="text-lg font-semibold mb-4">${currentDevice}</h3>
+      <div class="flex items-center justify-center gap-2 mb-4">
+        <h3 class="text-lg font-semibold">${currentDevice}</h3>
+        <button onclick="showEditModal()" class="text-gray-500 hover:text-gray-700 text-sm" title="Edit Device">
+          <!-- icon pensil (SVG) -->
+          <svg xmlns="http://www.w3.org/2000/svg" fill="#000000" viewBox="0 0 528.899 528.899" class="h-4 w-4">
+            <g>
+              <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981   c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611   C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069   L27.473,390.597L0.3,512.69z"/>
+            </g>
+          </svg>
+        </button>
+      </div>
+
       <div class="grid grid-cols-2 gap-4 mb-6">${buttons}</div>
       <button onclick="navigate('home')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c]">← Kembali</button>
+
+      ${modalDeviceDetail()}
+      ${modalConfirmDelete()}
     </div>
   `;
 }
+
 
 // modal edit, hapus device
 function modalDeviceDetail() {
@@ -224,19 +289,36 @@ function modalDeviceDetail() {
 function showDeviceModal(index) {
   const devices = JSON.parse(localStorage.getItem("devices") || "[]");
   const device = devices[index];
-  document.getElementById("modalDetail").classList.remove("hidden");
-  document.getElementById("editDeviceName").value = device.name;
+  currentDevice = device.name;
+  currentButtons = device.buttons;
   window.currentDeviceIndex = index;
+  navigate("remote");
 }
 
 function saveDeviceEdit() {
   const name = document.getElementById("editDeviceName").value.trim();
   if (!name) return alert("Nama device tidak boleh kosong.");
+
   const devices = JSON.parse(localStorage.getItem("devices") || "[]");
-  devices[window.currentDeviceIndex].name = name;
+  const index = window.currentDeviceIndex ?? devices.findIndex(d => d.name === currentDevice);
+
+  if (index === -1) return alert("Device tidak ditemukan.");
+
+  devices[index].name = name;
   localStorage.setItem("devices", JSON.stringify(devices));
+
+  currentDevice = name;
+
   hideDeviceModal();
-  navigate("home");
+  navigate("remote");
+}
+
+
+function showEditModal() {
+  const devices = JSON.parse(localStorage.getItem("devices") || "[]");
+  const device = devices[window.currentDeviceIndex];
+  document.getElementById("modalDetail").classList.remove("hidden");
+  document.getElementById("editDeviceName").value = device.name;
 }
 
 function hideDeviceModal() {
