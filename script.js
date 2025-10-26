@@ -159,6 +159,9 @@ function goToLearningWithButtons() {
   const devices = JSON.parse(localStorage.getItem("devices") || "[]");
   devices.push({ name, buttons: selectedButtons });
   localStorage.setItem("devices", JSON.stringify(devices));
+
+  window.currentDeviceIndex = devices.length - 1;
+  
   hideButtonForm();
 
   window.tempLearningData = { name, buttons: selectedButtons };
