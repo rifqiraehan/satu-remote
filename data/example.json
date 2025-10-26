@@ -1,0 +1,50 @@
+{
+  "devices": [
+    {
+      "name": "TV LG",
+      "protocol": "NEC",
+      "bits": 32,
+      "commands": {
+        "power": "0x20DF10EF",
+        "volume_up": "0x20DF40BF",
+        "volume_down": "0x20DFC03F",
+        "page_next": "0x20DF00FF",
+        "page_down": "0x20DF807F",
+        "num_1": "0x20DF8877",
+        "num_2": "0x20DF48B7",
+        "num_3": "0x20DFC837",
+        "num_4": "0x20DF28D7",
+        "num_5": "0x20DFA857",
+        "num_6": "0x20DF6897",
+        "num_7": "0x20DFE817",
+        "num_8": "0x20DF18E7",
+        "num_9": "0x20DF9867",
+        "num_0": "0x20DF08F7",
+        "menu": "0x20DFC23D",
+        "exit_menu": "0x20DFDA25"
+      }
+    },
+    {
+      "name": "AC Samsung",
+      "protocol": "COOLIX",
+      "bits": 24,
+      "commands": {
+        "off": "0xB27BE0",
+        "on_23c": "0xB21F58",
+        "temp_17": "0xB21F08",
+        "temp_18": "0xB21F18",
+        "temp_19": "0xB21F38",
+        "temp_20": "0xB21F28",
+        "temp_21": "0xB21F68",
+        "temp_22": "0xB21F78",
+        "temp_23": "0xB21F58",
+        "temp_24": "0xB21F48",
+        "temp_25": "0xB21FC8",
+        "temp_26": "0xB21FD8",
+        "temp_27": "0xB21F98",
+        "temp_28": "0xB21F88",
+        "temp_29": "0xB21FA8"
+      }
+    }
+  ]
+}
