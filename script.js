@@ -119,6 +119,15 @@ let selectedButtons = [...defaultButtons];
 function showButtonForm() {
   const name = document.getElementById("deviceNameInput").value.trim();
   if (!name) return alert("Masukkan nama device terlebih dahulu!");
+
+  const devices = JSON.parse(localStorage.getItem("devices") || "[]");
+
+  const isDuplicate = devices.some(d => d.name.toLowerCase() === name.toLowerCase());
+  if (isDuplicate) {
+    alert("Nama device sudah digunakan. Gunakan nama lain!");
+    return;
+  }
+
   hideAddModal();
   renderButtonList();
   document.getElementById("modalButtons").classList.remove("hidden");
@@ -161,7 +170,7 @@ function goToLearningWithButtons() {
   localStorage.setItem("devices", JSON.stringify(devices));
 
   window.currentDeviceIndex = devices.length - 1;
-  
+
   hideButtonForm();
 
   window.tempLearningData = { name, buttons: selectedButtons };
