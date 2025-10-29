@@ -1,2 +1,10 @@
 /archives
+/node_modules
+/dist/app.css
+/dist/app.js
+
 *.txt
+
+package-lock.json
+package.json
+build.js
