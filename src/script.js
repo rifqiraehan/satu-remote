@@ -54,8 +54,7 @@ const TEMPLATES = {
   'AC': [
     'Power', 'Temp Up', 'Temp Down', 'Fan', 'Snow'
   ],
-  'DVD': ['Power', 'Play', 'Pause', 'Stop', 'Next', 'Previous'],
-  'PROJECTOR': ['Power', 'Source', 'Menu', 'Exit'],
+  'PROYEKTOR': ['Power', 'Source', 'Menu', 'Exit'],
 };
 
 // map tombol ke ikon
@@ -100,8 +99,8 @@ function navigate(page) {
 function pageHome() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
   return `
-    <h2 class="text-center text-lg font-semibold text-[#1A434E] mb-6">
-      Daftar Device Terhubung
+    <h2 class="text-center text-xl font-semibold text-[#1A434E] mb-6">
+      Daftar Perangkat Terhubung
     </h2>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 justify-items-center">
@@ -114,8 +113,8 @@ function pageHome() {
 
       <button onclick="showAddModal()"
         class="border-2 border-dashed border-gray hover:border-[#1A434E] rounded-xl w-full h-32 flex flex-col items-center justify-center text-[#1A434E] text-sm font-medium hover:bg-gray-50 transition">
-        <span class="text-lg font-bold mb-1">+</span>
-        Tambahkan Device
+        <span class="text-2xl font-bold mb-1">+</span>
+        Tambahkan Perangkat
       </button>
     </div>
 
@@ -129,24 +128,24 @@ function pageHome() {
 
 // modal tambah device
 function modalAddDevice() {
-  const templates = ['CUSTOM', 'TV', 'AC', 'DVD', 'PROJECTOR'];
+  const templates = ['KUSTOM', 'TV', 'AC', 'PROYEKTOR'];
   return `
     <div id="modalAdd" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-80 shadow-lg relative">
         <button onclick="hideAddModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
-        <h3 class="text-lg font-semibold text-center text-[#1A434E] mb-4">Device Baru</h3>
+        <h3 class="text-lg font-semibold text-center text-[#1A434E] mb-4">Perangkat Baru</h3>
 
-        <label class="block text-sm text-[#1A434E] mb-1">Gunakan template</label>
+        <label class="block text-sm text-[#1A434E] mb-1">Gunakan Template</label>
         <select id="templateSelect" class="w-full border rounded-lg px-3 py-2 mb-4">
           ${templates.map(t => `<option value="${t}">${t}</option>`).join('')}
         </select>
 
-        <label class="block text-sm text-[#1A434E] mb-1">Nama device</label>
-        <input id="deviceNameInput" type="text" placeholder="Masukkan nama device"
+        <label class="block text-sm text-[#1A434E] mb-1">Nama Perangkat</label>
+        <input id="deviceNameInput" type="text" placeholder="Masukkan Nama Perangkat"
           class="w-full border rounded-lg px-3 py-2 mb-4" />
 
         <button onclick="showButtonForm()" class="w-full bg-[#1A434E] text-white py-2 rounded-lg font-medium hover:bg-[#14333c] transition">
-          LANJUT →
+          LANJUT
         </button>
       </div>
     </div>
@@ -179,7 +178,7 @@ function modalButtonForm() {
 
         <div class="flex justify-end mt-6">
           <button onclick="goToLearningWithButtons()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
-            LANJUT →
+            LANJUT
           </button>
         </div>
       </div>
@@ -200,7 +199,7 @@ function showButtonForm() {
   }
 
   const templateName = document.getElementById('templateSelect').value;
-  if (templateName === 'CUSTOM') {
+  if (templateName === 'KUSTOM') {
     selectedButtons = [...TEMPLATES['TV']];
   } else if (TEMPLATES[templateName]) {
     selectedButtons = [...TEMPLATES[templateName]];
@@ -324,7 +323,7 @@ function modalLearningGuide() {
       <div class="bg-white rounded-3xl p-6 w-96 shadow-xl text-[#1A434E] text-center relative animate-fade-in">
         <button onclick="hideLearningGuide()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
 
-        <h3 class="text-xl font-semibold mb-2">Siap untuk Mode Learning?</h3>
+        <h3 class="text-xl font-semibold mb-2">Siap untuk Mode Pengenalan?</h3>
         <p class="text-sm text-gray-600 mb-5 leading-relaxed">
           Sebelum memulai, pastikan:
         </p>
@@ -340,7 +339,7 @@ function modalLearningGuide() {
             Batal
           </button>
           <button onclick="startLearning()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
-            Mulai Learning →
+            Mulai Pengenalan
           </button>
         </div>
       </div>
@@ -376,13 +375,13 @@ function pageLearningMode() {
 
   return `
     <div class="text-[#1A434E] text-center px-6">
-      <h3 class="text-lg font-semibold mb-2">Mode Learning</h3>
+      <h3 class="text-lg font-semibold mb-2">Mode Pengenalan</h3>
       <p class="text-sm text-gray-600 mb-4">${currentDevice}</p>
       <ul class="text-left inline-block mb-6 space-y-2">${list}</ul>
 
       <div class="flex justify-center gap-4">
         <button class="px-4 py-2 border rounded-lg hover:bg-gray-50">Lewati Proses</button>
-        <button onclick="navigate('remote')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c]">Lanjut →</button>
+        <button onclick="navigate('remote')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c]">Lanjut</button>
       </div>
     </div>
   `;
@@ -478,7 +477,7 @@ function pageRemote() {
   return `
     <div class="text-center text-[#1A434E] px-6">
       <div class="flex items-center justify-center gap-2 mb-4">
-        <h3 class="text-lg font-semibold">${currentDevice}</h3>
+        <h3 class="text-xl font-semibold">${currentDevice}</h3>
         <button onclick="showEditModal()" class="text-gray-500 hover:text-gray-700 text-sm" title="Edit Device">
           <svg xmlns="http://www.w3.org/2000/svg" fill="#000000" viewBox="0 0 528.899 528.899" class="h-4 w-4">
             <g>
@@ -492,7 +491,7 @@ function pageRemote() {
 
       <div class="mt-4">
         <button onclick="navigate('home')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c] select-none">Kembali</button>
-        <button onclick="showRelearnConfirm()" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 select-none">Pelajari Ulang</button>
+        <button onclick="showRelearnConfirm()" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 select-none">Kenalkan Ulang</button>
       </div>
 
       ${modalDeviceDetail()}
