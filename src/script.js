@@ -112,7 +112,7 @@ function pageHome() {
       `).join('')}
 
       <button onclick="showAddModal()"
-        class="border-2 border-dashed border-gray hover:border-[#1A434E] rounded-xl w-full h-32 flex flex-col items-center justify-center text-[#1A434E] text-sm font-medium hover:bg-gray-50 transition">
+        class="border-2 border-dashed border-gray-500 hover:border-gray-300 rounded-xl w-full h-32 flex flex-col items-center justify-center text-gray-600 text-sm font-medium hover:bg-gray-50 transition cursor-pointer">
         <span class="text-2xl font-bold mb-1">+</span>
         Tambahkan Perangkat
       </button>
@@ -132,7 +132,7 @@ function modalAddDevice() {
   return `
     <div id="modalAdd" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-80 shadow-lg relative">
-        <button onclick="hideAddModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
+        <button onclick="hideAddModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700 cursor-pointer">×</button>
         <h3 class="text-lg font-semibold text-center text-[#1A434E] mb-4">Perangkat Baru</h3>
 
         <label class="block text-sm text-[#1A434E] mb-1">Gunakan Template</label>
@@ -165,7 +165,7 @@ function modalButtonForm() {
   return `
     <div id="modalButtons" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-96 shadow-lg relative text-[#1A434E]">
-        <button onclick="hideButtonForm()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
+        <button onclick="hideButtonForm()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700 cursor-pointer">×</button>
         <h3 class="text-lg font-semibold text-center mb-4">Pilih Tombol Remote</h3>
 
         <div class="flex flex-wrap gap-2 mb-4" id="buttonList"></div>
@@ -223,7 +223,7 @@ function renderButtonList() {
   container.innerHTML = selectedButtons.map((b, i) => `
     <span class="bg-gray-100 border rounded-full px-3 py-1 text-sm flex items-center gap-2">
       ${b}
-      <button onclick="removeButton(${i})" class="text-red-500 hover:text-red-700 font-bold">×</button>
+      <button onclick="removeButton(${i})" class="text-red-500 hover:text-red-700 font-bold cursor-pointer">×</button>
     </span>
   `).join('');
 }
@@ -321,7 +321,7 @@ function modalLearningGuide() {
   return `
     <div id="modalGuide" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-96 shadow-xl text-[#1A434E] text-center relative animate-fade-in">
-        <button onclick="hideLearningGuide()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
+        <button onclick="hideLearningGuide()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700 cursor-pointer">×</button>
 
         <h3 class="text-xl font-semibold mb-2">Siap untuk Mode Pengenalan?</h3>
         <p class="text-sm text-gray-600 mb-5 leading-relaxed">
@@ -547,7 +547,7 @@ function modalDeviceDetail() {
   return `
     <div id="modalDetail" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-80 shadow-lg relative">
-        <button onclick="hideDeviceModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700">×</button>
+        <button onclick="hideDeviceModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700 cursor-pointer">×</button>
         <h3 class="text-lg font-semibold text-center text-[#1A434E] mb-4">Edit Device</h3>
         <input id="editDeviceName" type="text"
           class="w-full border rounded-lg px-3 py-2 mb-4 text-[#1A434E]"
