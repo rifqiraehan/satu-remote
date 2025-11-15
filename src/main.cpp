@@ -3,6 +3,10 @@
 #include <ESPmDNS.h>
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
+#include <ArduinoJson.h>
+#include <IRremoteESP8266.h>
+#include <IRsend.h>
+#include <ir_Coolix.h>
 
 char apSSID[33] = "saturemote";
 char apPassword[64] = "bunnygirl";
@@ -14,6 +18,52 @@ AsyncWebServer server(80);
 
 String outputState = "off";
 const int ledPin = 2;
+const uint16_t kIrLed = 4;
+IRsend irsend(kIrLed);
+
+// Konversi nama protokol string ke enum T_DECODE_TYPE
+decode_type_t getProtocolEnum(String protocolName) {
+  if (protocolName == "NEC") return NEC;
+  if (protocolName == "SONY") return SONY;
+  if (protocolName == "RC5") return RC5;
+  if (protocolName == "RC6") return RC6;
+  if (protocolName == "PANASONIC") return PANASONIC;
+  if (protocolName == "LG") return LG;
+  if (protocolName == "JVC") return JVC;
+  if (protocolName == "SAMSUNG") return SAMSUNG;
+  if (protocolName == "COOLIX") return COOLIX;
+
+  return UNKNOWN;
+}
+
+IRCoolixAC ac(kIrLed); // Buat instance AC (hanya COOLIX untuk saat ini)
+
+void sendAcCommand(String protocol, String power, String mode, int temp) {
+  if (protocol != "COOLIX") {
+    Serial.println("Error: AC protocol not supported yet.");
+    return;
+  }
+
+  ac.begin(); // Reset state
+
+  if (power == "on") {
+    ac.on();
+  } else {
+    ac.off();
+  }
+
+  if (mode == "snow") {
+    ac.setMode(kCoolixCool);
+  } else if (mode == "fan") {
+    ac.setMode(kCoolixFan);
+  } // ...
+
+  ac.setTemp(temp);
+  ac.setFan(kCoolixFanAuto); // Asumsi auto fan
+
+  ac.send();
+  Serial.println("AC command sent.");
+}
 
 void trimQuotes(String &s) {
   if (s.length() > 0) {
@@ -87,7 +137,6 @@ void readWifiConfig() {
 }
 
 void initFS() {
-
   if (!LittleFS.begin(true)) {
     Serial.println("An Error has occurred while mounting or formatting LittleFS");
     while (true);
@@ -96,7 +145,6 @@ void initFS() {
 }
 
 void initWebServer() {
-
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(LittleFS, "/index.html", "text/html");
   });
@@ -109,7 +157,7 @@ void initWebServer() {
     request->send(LittleFS, "/script.js", "text/javascript");
   });
 
-  server.on("/led/on", HTTP_GET, [](AsyncWebServerRequest *request) {
+  /* server.on("/led/on", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("API: LED on");
     outputState = "on";
     digitalWrite(ledPin, HIGH);
@@ -125,7 +173,7 @@ void initWebServer() {
 
   server.on("/led/state", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(200, "text/plain", outputState);
-  });
+  }); */
 
   server.on("/get-wifi", HTTP_GET, [](AsyncWebServerRequest *request) {
 
@@ -154,6 +202,59 @@ void initWebServer() {
     }
   });
 
+  server.on("/send-ir", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+    [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+
+      String body = "";
+      for (size_t i = 0; i < len; i++) {
+        body += (char)data[i];
+      }
+      Serial.println("Received /send-ir: " + body);
+
+      JsonDocument doc;
+      deserializeJson(doc, body);
+
+      String protocol = doc["protocol"];
+      String codeStr = doc["code"];
+      int bits = doc["bits"];
+
+      // Konversi hex string (e.g., "0x...") ke uint64_t
+      uint64_t code = strtoull(codeStr.c_str(), NULL, 0);
+
+      decode_type_t protocolEnum = getProtocolEnum(protocol);
+
+      if (protocolEnum != UNKNOWN) {
+        Serial.printf("Sending Protocol: %s, Code: 0x%X, Bits: %d\n", protocol.c_str(), code, bits);
+        irsend.send(protocolEnum, code, bits);
+        request->send(200, "text/plain", "OK");
+      } else {
+        Serial.println("Error: Unknown protocol");
+        request->send(400, "text/plain", "Unknown protocol");
+      }
+  });
+
+  server.on("/send-ac-state", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
+    [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
+
+      String body = "";
+      for (size_t i = 0; i < len; i++) {
+        body += (char)data[i];
+      }
+      Serial.println("Received /send-ac-state: " + body);
+
+      JsonDocument doc;
+      deserializeJson(doc, body);
+
+      String protocol = doc["ir_config"]["protocol"];
+      String power = doc["state"]["power"];
+      String mode = doc["state"]["mode"];
+      int temp = doc["state"]["temp"];
+
+      sendAcCommand(protocol, power, mode, temp);
+
+      request->send(200, "text/plain", "OK");
+  });
+
   server.onNotFound([](AsyncWebServerRequest *request) {
     Serial.println("Client requested (onNotFound): " + request->url());
     request->send(LittleFS, "/index.html", "text/html");
@@ -169,6 +270,8 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
+
+  irsend.begin();
 
   initFS();
   readWifiConfig();
