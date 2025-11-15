@@ -1,0 +1,62 @@
+[
+  {
+    "name": "TV LG",
+    "buttons": [
+      "Power",
+      "Volume Up",
+      "Volume Down",
+      "Next",
+      "Previous",
+      "Menu",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "Exit",
+      "0"
+    ],
+    "powerState": "off"
+  },
+  {
+    "name": "TV Smasnug",
+    "buttons": [
+      "Power",
+      "Volume Up",
+      "Volume Down",
+      "Next",
+      "Previous",
+      "Menu",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "Exit",
+      "0"
+    ],
+    "powerState": "on",
+    "currentTemp": 23
+  },
+  {
+    "name": "ACC M",
+    "buttons": [
+      "Power",
+      "Temp Up",
+      "Temp Down",
+      "Fan",
+      "Snow"
+    ],
+    "powerState": "on",
+    "currentTemp": 28,
+    "acMode": "fan"
+  }
+]
