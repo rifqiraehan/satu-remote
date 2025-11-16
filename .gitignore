@@ -3,7 +3,7 @@
 /dist/app.css
 /dist/app.js
 
-*.txt
+/src/*.txt
 
 package-lock.json
 package.json
