@@ -40,7 +40,7 @@ const ICONS = {
   PLUS: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
 <path d="M6 12H18M12 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`,
-SETTINGS: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none">
+  SETTINGS: `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none">
 <path fill-rule="evenodd" clip-rule="evenodd" d="M20.75 7C20.75 7.41421 20.4142 7.75 20 7.75L4 7.75C3.58579 7.75 3.25 7.41421 3.25 7C3.25 6.58579 3.58579 6.25 4 6.25L20 6.25C20.4142 6.25 20.75 6.58579 20.75 7Z" fill="currentColor"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M20.75 12C20.75 12.4142 20.4142 12.75 20 12.75L4 12.75C3.58579 12.75 3.25 12.4142 3.25 12C3.25 11.5858 3.58579 11.25 4 11.25L20 11.25C20.4142 11.25 20.75 11.5858 20.75 12Z" fill="currentColor"/>
 <path fill-rule="evenodd" clip-rule="evenodd" d="M20.75 17C20.75 17.4142 20.4142 17.75 20 17.75L4 17.75C3.58579 17.75 3.25 17.4142 3.25 17C3.25 16.5858 3.58579 16.25 4 16.25L20 16.25C20.4142 16.25 20.75 16.5858 20.75 17Z" fill="currentColor"/>
@@ -62,14 +62,14 @@ const TEMPLATES = {
   'PROYEKTOR': ['Power', 'Source', 'Menu', 'Exit'],
 };
 
-// map tombol ke ikon
+// button mappping to icon
 const BUTTON_TO_ICON_MAP = {
-  'Power': ICONS.POWER,
   'Volume Up': ICONS.VOLUME_UP,
   'Volume Down': ICONS.VOLUME_DOWN,
-  'Next': ICONS.NEXT,
+  'Power': ICONS.POWER,
   'Previous': ICONS.PREVIOUS,
   'Menu': ICONS.MENU,
+  'Next': ICONS.NEXT,
   'Exit': ICONS.EXIT,
   'On': ICONS.POWER,
   'Off': ICONS.POWER,
@@ -82,6 +82,17 @@ const BUTTON_TO_ICON_MAP = {
 let currentDevice = null;
 let currentButtons = [];
 let selectedButtons = [];
+
+let currentLearningButtonIndex = 0;
+let learningPollInterval = null;
+
+let allTemplates = [];
+const GENERIC_TEMPLATES = {
+  'TV': TEMPLATES['TV'],
+  'AC': TEMPLATES['AC'],
+  'PROYEKTOR': TEMPLATES['PROYEKTOR'],
+  'KUSTOM': TEMPLATES['TV']
+};
 
 // startup
 window.addEventListener('load', () => {
@@ -107,7 +118,21 @@ window.addEventListener('load', () => {
     `;
   }
 
-  navigate('home');
+  fetch('/templates.json')
+    .then(response => {
+      if (!response.ok) throw new Error('Network response was not ok');
+      return response.json();
+    })
+    .then(data => {
+      console.log('Templates loaded:', data.templates);
+      allTemplates = data.templates || [];
+    })
+    .catch(err => {
+      console.error('Failed to fetch templates.json:', err);
+    })
+    .finally(() => {
+      navigate('home');
+    });
 });
 
 function toggleDropdown() {
@@ -206,7 +231,7 @@ function handleImportData() {
       }
     } catch (error) {
       alert('File tidak valid atau rusak. Pastikan file adalah format .json yang benar.');
-      console.error("Import error:", error);
+      console.error('Import error:', error);
     }
   };
 
@@ -219,7 +244,7 @@ function goToLearningMode(deviceName, buttons) {
   navigate('learning');
 }
 
-// navigasi halaman
+// page navigation
 function navigate(page) {
   const app = document.getElementById('app');
   app.innerHTML = '';
@@ -228,7 +253,7 @@ function navigate(page) {
   else if (page === 'remote') app.innerHTML = pageRemote();
 }
 
-// halaman utama
+// main page
 function pageHome() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
 
@@ -289,11 +314,11 @@ function modalWifiSettings() {
 }
 
 
-// Tampilkan modal Wi-Fi dan isi dengan data saat ini
+// show Wi-Fi modal and fill with current data
 function showWifiModal() {
   document.getElementById('modalWifi').classList.remove('hidden');
 
-  // Ambil data saat ini dari ESP32
+  // fetch current Wi-Fi settings from ESP32
   fetch('/get-wifi')
     .then(response => {
       if (!response.ok) {
@@ -306,17 +331,17 @@ function showWifiModal() {
       document.getElementById('wifiPass').value = data.pass || '';
     })
     .catch(err => {
-      console.error("Failed to fetch Wi-Fi settings:", err);
+      console.error('Failed to fetch Wi-Fi settings:', err);
       alert('Tidak bisa memuat pengaturan jaringan saat ini.');
     });
 }
 
-// Sembunyikan modal Wi-Fi
+// hide Wi-Fi modal
 function hideWifiModal() {
   document.getElementById('modalWifi').classList.add('hidden');
 }
 
-// Kirim data Wi-Fi baru ke ESP32
+// handle save Wi-Fi settings
 function handleSaveWifi() {
   const ssid = document.getElementById('wifiSSID').value;
   const pass = document.getElementById('wifiPass').value;
@@ -341,14 +366,13 @@ function handleSaveWifi() {
     method: 'POST',
     body: formData
   })
-  .catch(err => {
-    console.warn('Fetch failed (expected behavior during reboot):', err);
-  });
+    .catch(err => {
+      console.warn('Fetch failed (expected behavior during reboot):', err);
+    });
 }
 
-// modal tambah device
+// modal for adding new device
 function modalAddDevice() {
-  const templates = ['KUSTOM', 'TV', 'AC', 'PROYEKTOR'];
   return `
     <div id="modalAdd" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-80 shadow-lg relative">
@@ -362,24 +386,22 @@ function modalAddDevice() {
             type="text"
             placeholder="Ketik untuk mencari template..."
             class="w-full border rounded-lg px-3 py-2 mb-2"
-            oninput="filterTemplates()"
-            onfocus="showTemplateDropdown()"
+            oninput="populateTemplateDropdown()"
+            onfocus="populateTemplateDropdown(true)"
           />
           <div id="templateDropdown" class="hidden absolute z-10 w-full bg-white border rounded-lg shadow-lg max-h-40 overflow-y-auto">
-            ${templates.map(t => `
-              <div onclick="selectTemplate('${t}')" class="px-3 py-2 hover:bg-gray-100 cursor-pointer template-option" data-template="${t}">
-          ${t}
-              </div>
-            `).join('')}
-          </div>
+            </div>
         </div>
-        <label class="block text-sm text-[#1A434E] mb-1">Nama Perangkat</label>
-        <input type="hidden" id="templateSelect">
 
+        <input type="hidden" id="templateSelectName">
+        <input type="hidden" id="templateSelectId">
+        <input type="hidden" id="templateSelectIsTemplate">
+
+        <label class="block text-sm text-[#1A434E] mb-1">Nama Perangkat</Vlabel>
         <input id="deviceNameInput" type="text" placeholder="Masukkan Nama Perangkat"
           class="w-full border rounded-lg px-3 py-2 mb-4" />
 
-        <button onclick="showButtonForm()" class="w-full bg-[#1A434E] text-white py-2 rounded-lg font-medium hover:bg-[#14333c] transition">
+        <button onclick="handleDeviceAdd()" class="text-sm w-full bg-[#1A434E] text-white py-2 rounded-lg font-medium hover:bg-[#14333c] transition cursor-pointer">
           LANJUT
         </button>
       </div>
@@ -387,55 +409,136 @@ function modalAddDevice() {
   `;
 }
 
-function filterTemplates() {
+function populateTemplateDropdown(showAll = false) {
   const input = document.getElementById('templateSearch');
   const filter = input.value.toUpperCase();
   const dropdown = document.getElementById('templateDropdown');
-  const options = dropdown.getElementsByClassName('template-option');
+  let html = '';
 
   let hasVisible = false;
-  for (let i = 0; i < options.length; i++) {
-  const txtValue = options[i].textContent || options[i].innerText;
-  if (txtValue.toUpperCase().indexOf(filter) > -1) {
-options[i].style.display = "";
-hasVisible = true;
-  } else {
-options[i].style.display = "none";
+
+  if (allTemplates.length > 0) {
+    html += '<div class="px-3 py-1 text-xs text-gray-500 font-bold">Template Perangkat</div>';
+
+    allTemplates.forEach(template => {
+      const name = `${template.name} (${template.brand})`;
+      if (showAll || name.toUpperCase().indexOf(filter) > -1) {
+        html += `
+          <div onclick="selectTemplate('${name}', true, '${template.id}')"
+               class="px-3 py-2 hover:bg-gray-100 cursor-pointer template-option"
+               data-template-name="${name}">
+            ${name}
+          </div>
+        `;
+        hasVisible = true;
+      }
+    });
   }
-  }
+
+  html += '<div class="px-3 py-1 text-xs text-gray-500 font-bold">Kustom Manual</div>';
+
+  Object.keys(GENERIC_TEMPLATES).forEach(templateName => {
+    if (showAll || templateName.toUpperCase().indexOf(filter) > -1) {
+      html += `
+        <div onclick="selectTemplate('${templateName} (Kustom)', false, '${templateName}')"
+             class="px-3 py-2 hover:bg-gray-100 cursor-pointer template-option"
+             data-template-name="${templateName}">
+          ${templateName} (Kustom)
+        </div>
+      `;
+      hasVisible = true;
+    }
+  });
+
+  dropdown.innerHTML = html;
 
   if (hasVisible) {
-  dropdown.classList.remove('hidden');
+    dropdown.classList.remove('hidden');
   } else {
-  dropdown.classList.add('hidden');
+    dropdown.classList.add('hidden');
   }
 }
 
-function showTemplateDropdown() {
-  const input = document.getElementById('templateSearch');
-  if (input.value === '') {
-  const dropdown = document.getElementById('templateDropdown');
-  const options = dropdown.getElementsByClassName('template-option');
-  for (let i = 0; i < options.length; i++) {
-    options[i].style.display = "";
-  }
-  dropdown.classList.remove('hidden');
-  } else {
-  filterTemplates();
-  }
-}
-
-function selectTemplate(template) {
-  document.getElementById('templateSearch').value = template;
-  document.getElementById('templateSelect').value = template;
+function selectTemplate(name, isTemplate, id) {
+  document.getElementById('templateSearch').value = name;
+  document.getElementById('templateSelectName').value = name;
+  document.getElementById('templateSelectId').value = id;
+  document.getElementById('templateSelectIsTemplate').value = isTemplate;
   document.getElementById('templateDropdown').classList.add('hidden');
+}
+
+function handleDeviceAdd() {
+  const name = document.getElementById('deviceNameInput').value.trim();
+  if (!name) return alert('Masukkan nama device terlebih dahulu!');
+
+  const devices = JSON.parse(localStorage.getItem('devices') || '[]');
+  const isDuplicate = devices.some(d => d.name.toLowerCase() === name.toLowerCase());
+  if (isDuplicate) {
+    alert('Nama device sudah digunakan. Gunakan nama lain!');
+    return;
+  }
+
+  const templateId = document.getElementById('templateSelectId').value;
+  const isTemplate = document.getElementById('templateSelectIsTemplate').value === 'true';
+
+  if (!templateId) {
+    alert('Silakan pilih template terlebih dahulu.');
+    return;
+  }
+
+  if (isTemplate) {
+    console.log(`Adding from template: ${templateId}`);
+
+    const template = allTemplates.find(t => t.id === templateId);
+    if (!template) {
+      alert('Error: Template data tidak ditemukan.');
+      return;
+    }
+
+    const newDevice = {
+      name: name,
+      ui_template: template.category,
+      powerState: 'off',
+      button_data: template.button_data
+    };
+
+    if (template.category === 'AC') {
+      newDevice.currentTemp = 23;
+      newDevice.acMode = 'snow';
+      newDevice.ir_config = template.ir_config;
+    }
+
+    devices.push(newDevice);
+    localStorage.setItem('devices', JSON.stringify(devices));
+
+    alert(`Perangkat "${name}" berhasil ditambahkan!`);
+    hideAddModal();
+    navigate('home');
+
+  } else {
+    console.log(`Adding from generic: ${templateId}`);
+
+    const templateName = templateId;
+
+    if (GENERIC_TEMPLATES[templateName]) {
+      selectedButtons = [...GENERIC_TEMPLATES[templateName]];
+    } else {
+      selectedButtons = [];
+    }
+
+    hideAddModal();
+    renderButtonList();
+    document.getElementById('modalButtons').classList.remove('hidden');
+    window.tempDeviceName = name;
+    window.tempTemplateName = templateName;
+  }
 }
 
 document.addEventListener('click', function(event) {
   const search = document.getElementById('templateSearch');
   const dropdown = document.getElementById('templateDropdown');
   if (search && dropdown && !search.contains(event.target) && !dropdown.contains(event.target)) {
-  dropdown.classList.add('hidden');
+    dropdown.classList.add('hidden');
   }
 });
 
@@ -447,7 +550,7 @@ function hideAddModal() {
   document.getElementById('modalAdd').classList.add('hidden');
 }
 
-// modal form tombol remote (multi-select)
+// modal for selecting buttons
 function modalButtonForm() {
   return `
     <div id="modalButtons" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -460,44 +563,17 @@ function modalButtonForm() {
         <div class="flex">
           <input id="newButtonInput" type="text" placeholder="Tambah tombol..."
             class="flex-grow border rounded-lg px-3 py-2 text-sm" />
-          <button onclick="addNewButton()" class="ml-2 px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c]">Tambah</button>
+          <button onclick="addNewButton()" class="ml-2 px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c] cursor-pointer">Tambah</button>
         </div>
 
         <div class="flex justify-end mt-6">
-          <button onclick="goToLearningWithButtons()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
+          <button onclick="goToLearningWithButtons()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c] cursor-pointer">
             LANJUT
           </button>
         </div>
       </div>
     </div>
   `;
-}
-
-function showButtonForm() {
-  const name = document.getElementById('deviceNameInput').value.trim();
-  if (!name) return alert('Masukkan nama device terlebih dahulu!');
-
-  const devices = JSON.parse(localStorage.getItem('devices') || '[]');
-
-  const isDuplicate = devices.some(d => d.name.toLowerCase() === name.toLowerCase());
-  if (isDuplicate) {
-    alert('Nama device sudah digunakan. Gunakan nama lain!');
-    return;
-  }
-
-  const templateName = document.getElementById('templateSelect').value;
-  if (templateName === 'KUSTOM') {
-    selectedButtons = [...TEMPLATES['TV']];
-  } else if (TEMPLATES[templateName]) {
-    selectedButtons = [...TEMPLATES[templateName]];
-  } else {
-    selectedButtons = [];
-  }
-
-  hideAddModal();
-  renderButtonList();
-  document.getElementById('modalButtons').classList.remove('hidden');
-  window.tempDeviceName = name;
 }
 
 function hideButtonForm() {
@@ -532,9 +608,8 @@ function removeButton(index) {
 function goToLearningWithButtons() {
   const name = window.tempDeviceName;
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
-  const templateName = document.getElementById('templateSelect').value;
+  const templateName = window.tempTemplateName;
   const isAC = (templateName === 'AC');
-
   const deviceData = {
     name: name,
     ui_template: templateName,
@@ -549,8 +624,17 @@ function goToLearningWithButtons() {
   if (isAC) {
     deviceData.currentTemp = 23;
     deviceData.acMode = 'snow';
-    deviceData.ir_config = { protocol: "COOLIX", model: "DEFAULT" };
-    deviceData.button_data["PowerOff"] = null;
+
+    const acTemplate = allTemplates.find(t => t.id === 'ac_samsung');
+    if (acTemplate && acTemplate.ir_config) {
+      deviceData.ir_config = acTemplate.ir_config;
+    } else {
+      deviceData.ir_config = { protocol: 'COOLIX', model: 'DEFAULT' };
+    }
+
+    if (!deviceData.button_data.hasOwnProperty('PowerOff')) {
+      deviceData.button_data['PowerOff'] = null;
+    }
   }
 
   devices.push(deviceData);
@@ -620,7 +704,7 @@ function changeTemperature(direction) {
   navigate('remote');
 }
 
-// modal panduan sebelum learning
+// modal learning guide
 function modalLearningGuide() {
   return `
     <div id="modalGuide" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -639,10 +723,10 @@ function modalLearningGuide() {
         </ul>
 
         <div class="flex justify-center gap-3 mt-2">
-          <button onclick="hideLearningGuide()" class="px-4 py-2 rounded-lg border hover:bg-gray-50">
+          <button onclick="hideLearningGuide()" class="px-4 py-2 rounded-lg border hover:bg-gray-50 cursor-pointer">
             Batal
           </button>
-          <button onclick="startLearning()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
+          <button onclick="startLearning()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c] cursor-pointer">
             Mulai Pengenalan
           </button>
         </div>
@@ -668,31 +752,143 @@ function startLearning() {
   goToLearningMode(name, buttons);
 }
 
-// halaman mode learning
+// learning mode page
 function pageLearningMode() {
-  const list = currentButtons.map((btn, i) => `
-    <li class="flex items-center gap-2">
-      <span class="w-3 h-3 rounded-full ${i < 3 ? 'bg-green-500' : 'bg-black'}"></span>
-      Tekan tombol ${btn} di Remote Asli
-    </li>
-  `).join('');
+  if (learningPollInterval) {
+    clearInterval(learningPollInterval);
+    learningPollInterval = null;
+  }
+  currentLearningButtonIndex = 0;
+
+  setTimeout(setupCurrentButtonUI, 100);
 
   return `
     <div class="text-[#1A434E] text-center px-6">
       <h3 class="text-lg font-semibold mb-2">Mode Pengenalan</h3>
-      <p class="text-sm text-gray-600 mb-4">${currentDevice}</p>
-      <ul class="text-left inline-block mb-6 space-y-2">${list}</ul>
+      <p class="text-sm text-gray-600 mb-5">${currentDevice}</p>
+
+      <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full max-w-sm mx-auto mb-4">
+        <p class="text-sm text-gray-600 mb-2">TEKAN TOMBOL:</p>
+        <h2 id="currentButtonName" class="text-2xl font-bold text-[#1A434E] mb-2">...</h2>
+        <p id="learningStatus" class="text-sm font-medium text-blue-600 h-5">Memulai...</p>
+      </div>
+
+      <div class="w-full max-w-sm mx-auto mb-6">
+        <p class="text-left text-sm font-semibold mb-2">Daftar Tombol:</p>
+        <ul id="buttonLearningList" class="text-left text-sm text-gray-700 space-y-1">
+          </ul>
+      </div>
 
       <div class="flex justify-center gap-4">
-        <button class="px-4 py-2 border rounded-lg hover:bg-gray-50">Lewati Proses</button>
-        <button onclick="navigate('remote')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c]">Lanjut</button>
+        <button id="skipButton" onclick="skipCurrentButton()" class="text-sm px-4 py-2 border rounded-lg hover:bg-gray-50 cursor-pointer">Lewati Tombol</button>
+        <button onclick="finishLearning()" class="text-sm px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c] cursor-pointer">Selesai & Simpan</button>
       </div>
     </div>
   `;
 }
 
-// halaman remote
-// halaman remote
+// update the UI for the current button to be learned
+function setupCurrentButtonUI() {
+  renderLearningList();
+
+  if (currentLearningButtonIndex >= currentButtons.length) {
+    document.getElementById('currentButtonName').innerText = 'Selesai!';
+    document.getElementById('learningStatus').innerText = 'Semua tombol telah diproses.';
+    document.getElementById('skipButton').classList.add('hidden');
+    return;
+  }
+
+  const buttonName = currentButtons[currentLearningButtonIndex];
+
+  document.getElementById('currentButtonName').innerText = buttonName;
+  document.getElementById('learningStatus').innerText = 'Arahkan remote dan tekan tombol...';
+
+  fetch('/start-learning')
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Device not ready for learning.');
+      }
+      document.getElementById('learningStatus').innerText = 'Menunggu sinyal...';
+
+      learningPollInterval = setInterval(pollForLearnedCode, 1000);
+    })
+    .catch(err => {
+      console.error(err);
+      document.getElementById('learningStatus').innerText = 'Error! Coba lagi.';
+    });
+}
+
+// render the to-do list of buttons
+function renderLearningList() {
+  const listEl = document.getElementById('buttonLearningList');
+  if (!listEl) return;
+
+  listEl.innerHTML = currentButtons.map((btn, i) => {
+    if (i < currentLearningButtonIndex) {
+      return `<li class="text-green-500 flex items-center gap-2"><span class="text-lg">●</span> ${btn} (Selesai)</li>`;
+    } else if (i === currentLearningButtonIndex) {
+      return `<li class="font-bold text-blue-600 flex items-center gap-2"><span class="text-lg">●</span> ${btn} (Sekarang)</li>`;
+    } else {
+      return `<li class="text-gray-400 flex items-center gap-2"><span class="text-lg">●</span> ${btn} (Menunggu)</li>`;
+    }
+  }).join('');
+}
+
+// polls the /get-learned-code endpoint
+function pollForLearnedCode() {
+  fetch('/get-learned-code')
+    .then(async response => {
+      if (response.status === 204) {
+        console.log('Waiting for code...');
+        return;
+      }
+
+      if (response.status === 200) {
+        clearInterval(learningPollInterval);
+        const data = await response.json();
+
+        console.log('Code received:', data);
+        document.getElementById('learningStatus').innerText = `Berhasil! (Protokol: ${data.protocol})`;
+
+        const devices = JSON.parse(localStorage.getItem('devices') || '[]');
+        const device = devices[window.currentDeviceIndex];
+
+        if (device && device.button_data) {
+          const buttonName = currentButtons[currentLearningButtonIndex];
+          device.button_data[buttonName] = data;
+          localStorage.setItem('devices', JSON.stringify(devices));
+        }
+        currentLearningButtonIndex++;
+        setTimeout(setupCurrentButtonUI, 1000);
+      }
+    })
+    .catch(err => {
+      console.error('Polling error:', err);
+      document.getElementById('learningStatus').innerText = 'Koneksi error. Refresh halaman.';
+      clearInterval(learningPollInterval);
+    });
+}
+
+function skipCurrentButton() {
+  if (learningPollInterval) {
+    clearInterval(learningPollInterval);
+  }
+
+  console.log(`Skipped button: ${currentButtons[currentLearningButtonIndex]}`);
+
+  currentLearningButtonIndex++;
+  setupCurrentButtonUI();
+}
+
+function finishLearning() {
+  if (learningPollInterval) {
+    clearInterval(learningPollInterval);
+  }
+  alert('Proses pengenalan selesai!');
+  navigate('home');
+}
+
+// remote control page
 function pageRemote() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
   const device = devices[window.currentDeviceIndex];
@@ -737,7 +933,6 @@ function pageRemote() {
       }
     };
 
-    // Build dynamic AC layout based on currentButtons
     let acButtonsHTML = '';
 
     currentButtons.forEach(btnName => {
@@ -748,7 +943,7 @@ function pageRemote() {
       let onclick = '';
       let icon = null;
       let color = 'text-gray-700';
-      let label = btnName;
+      const label = btnName;
 
       if (btnName === 'Power') {
         onclick = 'togglePower()';
@@ -824,8 +1019,8 @@ function pageRemote() {
     <div class="text-center text-[#1A434E] px-6">
       <div class="flex items-center justify-center gap-2 mb-4">
         <h3 class="text-xl font-semibold">${currentDevice}</h3>
-        <button onclick="showEditModal()" class="text-gray-500 hover:text-gray-700 text-sm" title="Edit Device">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="#000000" viewBox="0 0 528.899 528.899" class="h-4 w-4">
+        <button onclick="showEditModal()" class="text-gray-600 hover:text-gray-700 text-sm cursor-pointer" title="Edit Device">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 528.899 528.899" class="h-4 w-4">
             <g>
               <path d="M328.883,89.125l107.59,107.589l-272.34,272.34L56.604,361.465L328.883,89.125z M518.113,63.177l-47.981-47.981     c-18.543-18.543-48.653-18.543-67.259,0l-45.961,45.961l107.59,107.59l53.611-53.611     C532.495,100.753,532.495,77.559,518.113,63.177z M0.3,512.69c-1.958,8.812,5.998,16.708,14.811,14.565l119.891-29.069     L27.473,390.597L0.3,512.69z"/>
             </g>
@@ -836,8 +1031,8 @@ function pageRemote() {
       ${remoteLayout}
 
       <div class="mt-4">
-        <button onclick="navigate('home')" class="px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c] select-none">Kembali</button>
-        <button onclick="showRelearnConfirm()" class="px-4 py-2 ml-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 select-none">Kenalkan Ulang</button>
+        <button onclick="navigate('home')" class="text-sm px-4 py-2 bg-[#1A434E] text-white rounded-lg hover:bg-[#14333c] select-none cursor-pointer">Kembali</button>
+        <button onclick="showRelearnConfirm()" class="text-sm px-4 py-2 ml-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 select-none cursor-pointer">Uji Ulang</button>
       </div>
 
       ${modalDeviceDetail()}
@@ -847,7 +1042,7 @@ function pageRemote() {
   `;
 }
 
-// Mengirim perintah IR statis
+// sending static IR commands
 async function sendIrCommand(buttonName) {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
   const device = devices[window.currentDeviceIndex];
@@ -857,18 +1052,17 @@ async function sendIrCommand(buttonName) {
   const cmd = device.button_data[buttonName];
 
   if (!cmd) {
-    alert(`Tombol "${buttonName}" belum dipelajari (unlearned). Silakan gunakan mode "Kenalkan Ulang".`);
+    alert(`Tombol "${buttonName}" belum dipelajari (unlearned). Silakan gunakan mode "Uji Ulang".`);
     return;
   }
 
-  // Menampilkan umpan balik visual (opsional)
-  showCommandFeedback();
+  // showCommandFeedback();
 
   try {
     const response = await fetch('/send-ir', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(cmd) // e.g., { "protocol": "NEC", "code": "0x...", "bits": 32 }
+      body: JSON.stringify(cmd)
     });
     if (!response.ok) {
       alert('Error: Perangkat tidak merespons.');
@@ -879,7 +1073,7 @@ async function sendIrCommand(buttonName) {
   }
 }
 
-// Mengirim perintah status AC (Stateful)
+// sending AC status commands (Stateful)
 async function sendAcState() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
   const device = devices[window.currentDeviceIndex];
@@ -887,7 +1081,7 @@ async function sendAcState() {
   if (!device || !device.ir_config) return;
 
   const statePayload = {
-    ir_config: device.ir_config, // e.g., { "protocol": "COOLIX" }
+    ir_config: device.ir_config,
     state: {
       power: device.powerState,
       temp: device.currentTemp,
@@ -895,8 +1089,7 @@ async function sendAcState() {
     }
   };
 
-  // Menampilkan umpan balik visual (opsional)
-  showCommandFeedback();
+  // showCommandFeedback();
 
   try {
     const response = await fetch('/send-ac-state', {
@@ -912,7 +1105,7 @@ async function sendAcState() {
   }
 }
 
-// Umpan balik visual sederhana saat tombol ditekan
+// simple feedback with fade effect when button clicked
 function showCommandFeedback() {
   const app = document.getElementById('app');
   app.style.transition = 'opacity 0.1s ease-out';
@@ -935,15 +1128,15 @@ function setAcMode(mode) {
   navigate('remote');
 }
 
-// modal konfirmasi pengenalan remote ulang
+// relearn confirmation modal
 function modalConfirmRelearn() {
   return `
     <div id="modalRelearn" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-80 shadow-lg text-center text-[#1A434E]">
         <p class="mb-4 text-sm">Apakah Anda yakin ingin memulai ulang proses pengenalan tombol untuk remote ini?</p>
         <div class="flex justify-center gap-3">
-          <button onclick="hideRelearnConfirm()" class="px-4 py-2 rounded-lg border hover:bg-gray-50">Batal</button>
-          <button onclick="confirmRelearn()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c]">
+          <button onclick="hideRelearnConfirm()" class="px-4 py-2 rounded-lg border hover:bg-gray-50 cursor-pointer">Batal</button>
+          <button onclick="confirmRelearn()" class="px-4 py-2 rounded-lg bg-[#1A434E] text-white hover:bg-[#14333c] cursor-pointer">
             Ya, mulai ulang
           </button>
         </div>
@@ -965,7 +1158,7 @@ function confirmRelearn() {
   goToLearningMode(currentDevice, currentButtons);
 }
 
-// modal edit, hapus device
+// device detail modal
 function modalDeviceDetail() {
   return `
     <div id="modalDetail" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -976,8 +1169,8 @@ function modalDeviceDetail() {
           class="w-full border rounded-lg px-3 py-2 mb-4 text-[#1A434E]"
           placeholder="Nama device" />
         <div class="flex justify-between">
-          <button onclick="saveDeviceEdit()" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Simpan</button>
-          <button onclick="showConfirmDelete()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Hapus</button>
+          <button onclick="saveDeviceEdit()" class="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 cursor-pointer">Simpan</button>
+          <button onclick="showConfirmDelete()" class="px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 cursor-pointer">Hapus</button>
         </div>
       </div>
     </div>
@@ -1030,7 +1223,6 @@ function saveDeviceEdit() {
   navigate('remote');
 }
 
-
 function showEditModal() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
   const device = devices[window.currentDeviceIndex];
@@ -1042,15 +1234,15 @@ function hideDeviceModal() {
   document.getElementById('modalDetail').classList.add('hidden');
 }
 
-// modal konfirmasi hapus
+// delete device confirmation modal
 function modalConfirmDelete() {
   return `
     <div id="modalConfirm" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
       <div class="bg-white rounded-3xl p-6 w-72 shadow-lg text-center">
         <p class="text-[#1A434E] mb-4 text-sm">Yakin ingin menghapus device ini?</p>
         <div class="flex justify-center gap-3">
-          <button onclick="hideConfirmDelete()" class="px-4 py-2 rounded-lg border text-[#1A434E] hover:bg-gray-50">Batal</button>
-          <button onclick="deleteDevice()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">Hapus</button>
+          <button onclick="hideConfirmDelete()" class="px-4 py-2 rounded-lg border text-[#1A434E] hover:bg-gray-50 cursor-pointer">Batal</button>
+          <button onclick="deleteDevice()" class="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 cursor-pointer">Hapus</button>
         </div>
       </div>
     </div>
