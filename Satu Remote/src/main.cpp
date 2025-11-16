@@ -7,9 +7,10 @@
 #include <IRremoteESP8266.h>
 #include <IRsend.h>
 #include <ir_Coolix.h>
+#include <IRrecv.h>
 
 char apSSID[33] = "saturemote";
-char apPassword[64] = "bunnygirl";
+char apPassword[64] = "saturemote";
 const char* configFilePath = "/wifi_config.txt";
 
 const byte DNS_PORT = 53;
@@ -18,10 +19,17 @@ AsyncWebServer server(80);
 
 String outputState = "off";
 const int ledPin = 2;
-const uint16_t kIrLed = 4;
-IRsend irsend(kIrLed);
+const uint16_t kIrLed = 4;    // SEND pin
+const uint16_t kRecvPin = 15;   // RECEIVE pin
+const uint16_t kRecvBufferSize = 1024;
 
-// Konversi nama protokol string ke enum T_DECODE_TYPE
+IRsend irsend(kIrLed);
+IRrecv irrecv(kRecvPin, kRecvBufferSize, 50, true); // 50ms timeout, enable LED feedback
+decode_results results; // To store the decoded results
+
+bool isLearningMode = false;
+
+// convert protocal name to enum
 decode_type_t getProtocolEnum(String protocolName) {
   if (protocolName == "NEC") return NEC;
   if (protocolName == "SONY") return SONY;
@@ -36,7 +44,24 @@ decode_type_t getProtocolEnum(String protocolName) {
   return UNKNOWN;
 }
 
-IRCoolixAC ac(kIrLed); // Buat instance AC (hanya COOLIX untuk saat ini)
+// convert protocol enum to a String
+String typeToString(decode_type_t protocol) {
+  switch (protocol) {
+    case NEC: return "NEC";
+    case SONY: return "SONY";
+    case RC5: return "RC5";
+    case RC6: return "RC6";
+    case PANASONIC: return "PANASONIC";
+    case LG: return "LG";
+    case JVC: return "JVC";
+    case SAMSUNG: return "SAMSUNG";
+    case COOLIX: return "COOLIX";
+    case UNKNOWN:
+    default: return "UNKNOWN";
+  }
+}
+
+IRCoolixAC ac(kIrLed);
 
 void sendAcCommand(String protocol, String power, String mode, int temp) {
   if (protocol != "COOLIX") {
@@ -59,7 +84,7 @@ void sendAcCommand(String protocol, String power, String mode, int temp) {
   } // ...
 
   ac.setTemp(temp);
-  ac.setFan(kCoolixFanAuto); // Asumsi auto fan
+  ac.setFan(kCoolixFanAuto); // auto fan
 
   ac.send();
   Serial.println("AC command sent.");
@@ -157,6 +182,10 @@ void initWebServer() {
     request->send(LittleFS, "/script.js", "text/javascript");
   });
 
+  server.on("/templates.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(LittleFS, "/templates.json", "application/json");
+  });
+
   /* server.on("/led/on", HTTP_GET, [](AsyncWebServerRequest *request) {
     Serial.println("API: LED on");
     outputState = "on";
@@ -202,6 +231,38 @@ void initWebServer() {
     }
   });
 
+  // start listening for an IR code
+  server.on("/start-learning", HTTP_GET, [](AsyncWebServerRequest *request) {
+    irrecv.enableIRIn(); // Start the receiver
+    isLearningMode = true;
+    Serial.println("API: Learning mode activated.");
+    request->send(200, "text/plain", "Learning started. Point remote and press button.");
+  });
+
+  server.on("/get-learned-code", HTTP_GET, [](AsyncWebServerRequest *request) {
+    if (isLearningMode && irrecv.decode(&results)) {
+      isLearningMode = false; // Stop learning
+      irrecv.disableIRIn(); // Stop the receiver
+      Serial.println("API: Code captured!");
+
+      // Convert the result to JSON
+      JsonDocument doc;
+      doc["protocol"] = typeToString(results.decode_type);
+      doc["bits"] = results.bits;
+      doc["code"] = results.value; // the value to store
+
+      String output;
+      serializeJson(doc, output);
+
+      Serial.println(output);
+      request->send(200, "application/json", output);
+
+      irrecv.resume();
+    } else {
+      request->send(204, "text/plain", "Waiting...");
+    }
+  });
+
   server.on("/send-ir", HTTP_POST, [](AsyncWebServerRequest *request) {}, NULL,
     [](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total) {
 
@@ -218,7 +279,6 @@ void initWebServer() {
       String codeStr = doc["code"];
       int bits = doc["bits"];
 
-      // Konversi hex string (e.g., "0x...") ke uint64_t
       uint64_t code = strtoull(codeStr.c_str(), NULL, 0);
 
       decode_type_t protocolEnum = getProtocolEnum(protocol);
@@ -272,6 +332,8 @@ void setup() {
   digitalWrite(ledPin, LOW);
 
   irsend.begin();
+  irrecv.enableIRIn(); // Start the receiver
+  irrecv.disableIRIn(); // Disable until needed
 
   initFS();
   readWifiConfig();
