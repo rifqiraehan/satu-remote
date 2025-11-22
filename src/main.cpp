@@ -23,6 +23,11 @@ const uint16_t kIrLed = 4;    // SEND pin
 const uint16_t kRecvPin = 15;   // RECEIVE pin
 const uint16_t kRecvBufferSize = 1024;
 
+const int buzzerPin = 5; // connect Positive of Active Buzzer to GPIO 5
+bool isBuzzerActive = false;
+unsigned long lastBuzzerToggle = 0;
+const unsigned long buzzerInterval = 500;
+
 IRsend irsend(kIrLed);
 IRrecv irrecv(kRecvPin, kRecvBufferSize, 50, true); // 50ms timeout, enable LED feedback
 decode_results results; // To store the decoded results
@@ -320,6 +325,23 @@ void initWebServer() {
     request->send(LittleFS, "/index.html", "text/html");
   });
 
+  server.on("/set-buzzer", HTTP_POST, [](AsyncWebServerRequest *request) {
+    if (request->hasParam("state", true)) {
+      String state = request->getParam("state", true)->value();
+      if (state == "on") {
+        isBuzzerActive = true;
+        Serial.println("API: Buzzer ON");
+      } else {
+        isBuzzerActive = false;
+        digitalWrite(buzzerPin, LOW);
+        Serial.println("API: Buzzer OFF");
+      }
+      request->send(200, "text/plain", "OK");
+    } else {
+      request->send(400, "text/plain", "Missing state parameter");
+    }
+  });
+
   server.begin();
   Serial.println("HTTP server started");
 }
@@ -330,6 +352,9 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
   digitalWrite(ledPin, LOW);
+
+  pinMode(buzzerPin, OUTPUT);
+  digitalWrite(buzzerPin, LOW);
 
   irsend.begin();
   irrecv.enableIRIn(); // Start the receiver
@@ -362,4 +387,13 @@ void setup() {
 
 void loop() {
   dnsServer.processNextRequest();
+
+  if (isBuzzerActive) {
+    if (millis() - lastBuzzerToggle >= buzzerInterval) {
+      lastBuzzerToggle = millis();
+      // Toggle pin state (High -> Low -> High)
+      int state = digitalRead(buzzerPin);
+      digitalWrite(buzzerPin, !state);
+    }
+  }
 }
