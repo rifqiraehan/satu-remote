@@ -112,28 +112,94 @@ window.addEventListener('load', () => {
           <div class="py-1" role="none">
             <a onclick="showWifiModal(); toggleDropdown();" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer" role="menuitem" tabindex="-1">Wi-Fi Settings</a>
             <a onclick="showBackupModal(); toggleDropdown();" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer" role="menuitem" tabindex="-1">Data Backup</a>
+            <a onclick="showFindDeviceModal(); toggleDropdown();" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer border-t" role="menuitem" tabindex="-1">Cari Perangkat</a>
           </div>
         </div>
       </div>
     `;
   }
 
-  fetch('/templates.json')
-    .then(response => {
-      if (!response.ok) throw new Error('Network response was not ok');
-      return response.json();
-    })
-    .then(data => {
-      console.log('Templates loaded:', data.templates);
-      allTemplates = data.templates || [];
-    })
-    .catch(err => {
-      console.error('Failed to fetch templates.json:', err);
-    })
-    .finally(() => {
-      navigate('home');
-    });
+fetch('/templates.json')
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
+  .then(data => {
+    console.log('Templates loaded:', data.templates);
+    allTemplates = data.templates || [];
+  })
+  .catch(err => {
+    console.error('Failed to fetch templates.json:', err);
+  })
+  .finally(() => {
+    navigate('home');
+  });
 });
+
+function modalFindDevice() {
+  return `
+    <div id="modalFind" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-3xl p-6 w-80 shadow-lg relative text-[#1A434E] text-center">
+        <button onclick="hideFindDeviceModal()" class="absolute right-4 top-3 text-2xl text-gray-500 hover:text-gray-700 cursor-pointer">×</button>
+        <h3 class="text-lg font-semibold mb-4">Cari Perangkat</h3>
+
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p class="text-sm text-gray-600 mb-1">Bunyikan buzzer untuk menemukan lokasi modul.</p>
+        </div>
+
+        <div class="flex items-center justify-center mb-6">
+           <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="buzzerSwitch" class="sr-only peer" onchange="toggleBuzzer(this.checked)">
+            <div class="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-500"></div>
+            <span class="ml-3 text-sm font-medium text-gray-900" id="buzzerLabel">OFF</span>
+          </label>
+        </div>
+
+        <button onclick="hideFindDeviceModal()" class="w-full border border-gray-300 text-gray-600 py-2 rounded-lg font-medium hover:bg-gray-50 transition cursor-pointer">
+          Tutup
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function showFindDeviceModal() {
+  document.getElementById('modalFind').classList.remove('hidden');
+  // Reset switch to off when opening (optional, assumes buzzer is off by default)
+  const checkbox = document.getElementById('buzzerSwitch');
+  if(checkbox) {
+     checkbox.checked = false;
+     document.getElementById('buzzerLabel').innerText = "OFF";
+     // Ensure backend is off
+     toggleBuzzer(false);
+  }
+}
+
+function hideFindDeviceModal() {
+  // Turn off buzzer when closing modal for safety/annoyance prevention
+  const checkbox = document.getElementById('buzzerSwitch');
+  if(checkbox && checkbox.checked) {
+      checkbox.checked = false;
+      toggleBuzzer(false);
+  }
+  document.getElementById('modalFind').classList.add('hidden');
+}
+
+function toggleBuzzer(isChecked) {
+  const label = document.getElementById('buzzerLabel');
+  label.innerText = isChecked ? "BERBUNYI" : "OFF";
+
+  const state = isChecked ? 'on' : 'off';
+  const formData = new URLSearchParams();
+  formData.append('state', state);
+
+  fetch('/set-buzzer', {
+    method: 'POST',
+    body: formData
+  }).then(res => {
+      if(res.ok) console.log("Buzzer set to " + state);
+  }).catch(err => console.error(err));
+}
 
 function toggleDropdown() {
   const menu = document.getElementById('settingsDropdown');
@@ -287,6 +353,7 @@ function pageHome() {
     ${modalLearningGuide()}
     ${modalWifiSettings()}
     ${modalBackupData()}
+    ${modalFindDevice()}
   `;
 }
 
