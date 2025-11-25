@@ -100,15 +100,10 @@ window.addEventListener('load', () => {
   if (settingsPlaceholder) {
     settingsPlaceholder.innerHTML = `
       <div class="relative inline-block text-left">
-
         <button onclick="toggleDropdown()" class="p-2 text-gray-600 hover:text-gray-900 cursor-pointer" title="Settings">
           <div class="w-8 h-8 flex items-center justify-center">${ICONS.SETTINGS}</div>
         </button>
-
-        <div id="settingsDropdown"
-             class="hidden absolute right-0 z-50 mt-2 w-35 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-200 ring-opacity-5 focus:outline-none
-                    transition ease-out duration-100 transform opacity-0 scale-95"
-             role="menu" aria-orientation="vertical">
+        <div id="settingsDropdown" class="hidden absolute right-0 z-50 mt-2 w-35 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-gray-200 ring-opacity-5 focus:outline-none transition ease-out duration-100 transform opacity-0 scale-95" role="menu" aria-orientation="vertical">
           <div class="py-1" role="none">
             <a onclick="showWifiModal(); toggleDropdown();" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer" role="menuitem" tabindex="-1">Wi-Fi Settings</a>
             <a onclick="showBackupModal(); toggleDropdown();" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer" role="menuitem" tabindex="-1">Data Backup</a>
@@ -119,7 +114,18 @@ window.addEventListener('load', () => {
     `;
   }
 
-fetch('/templates.json')
+  const globalModalsContainer = document.createElement('div');
+  globalModalsContainer.id = 'global-modals-container';
+
+  globalModalsContainer.innerHTML =
+    modalWifiSettings() +
+    modalBackupData() +
+    modalFindDevice() +
+    modalLearningGuide();
+
+  document.body.appendChild(globalModalsContainer);
+
+  fetch('/templates.json')
   .then(response => {
     if (!response.ok) throw new Error('Network response was not ok');
     return response.json();
@@ -324,14 +330,13 @@ function pageHome() {
   const devices = JSON.parse(localStorage.getItem('devices') || '[]');
 
   return `
-
     <div class="mb-6">
       <h2 class="text-center text-xl font-semibold text-[#1A434E]">
         Daftar Perangkat
       </h2>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  gap-4 justify-items-center">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center">
       ${devices.map((d, i) => `
         <div onclick="showDeviceModal(${i})"
           class="bg-purple-100 text-center text-base font-medium text-[#1A434E] rounded-xl px-4 py-6 w-full h-32 shadow-sm cursor-pointer hover:scale-[1.02] transition flex items-center justify-center">
@@ -350,10 +355,6 @@ function pageHome() {
     ${modalDeviceDetail()}
     ${modalConfirmDelete()}
     ${modalButtonForm()}
-    ${modalLearningGuide()}
-    ${modalWifiSettings()}
-    ${modalBackupData()}
-    ${modalFindDevice()}
   `;
 }
 
@@ -1222,7 +1223,13 @@ function hideRelearnConfirm() {
 
 function confirmRelearn() {
   hideRelearnConfirm();
-  goToLearningMode(currentDevice, currentButtons);
+
+  window.tempLearningData = {
+    name: currentDevice,
+    buttons: currentButtons
+  };
+
+  showLearningGuide();
 }
 
 // device detail modal
