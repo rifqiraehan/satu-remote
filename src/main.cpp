@@ -19,11 +19,11 @@ AsyncWebServer server(80);
 
 String outputState = "off";
 const int ledPin = 2;
-const uint16_t kIrLed = 4;    // SEND pin
-const uint16_t kRecvPin = 15;   // RECEIVE pin
+const uint16_t kIrLed = 21;    // SEND pin
+const uint16_t kRecvPin = 35;   // RECEIVE pin
 const uint16_t kRecvBufferSize = 1024;
 
-const int buzzerPin = 5; // connect Positive of Active Buzzer to GPIO 5
+const int buzzerPin = 18; // connect Positive of Active Buzzer to GPIO 5
 bool isBuzzerActive = false;
 unsigned long lastBuzzerToggle = 0;
 const unsigned long buzzerInterval = 500;
@@ -41,10 +41,12 @@ decode_type_t getProtocolEnum(String protocolName) {
   if (protocolName == "RC5") return RC5;
   if (protocolName == "RC6") return RC6;
   if (protocolName == "PANASONIC") return PANASONIC;
+  if (protocolName == "PANASONIC_AC") return PANASONIC_AC;
   if (protocolName == "LG") return LG;
   if (protocolName == "JVC") return JVC;
   if (protocolName == "SAMSUNG") return SAMSUNG;
   if (protocolName == "COOLIX") return COOLIX;
+  if (protocolName == "EPSON") return EPSON;
 
   return UNKNOWN;
 }
@@ -57,10 +59,12 @@ String typeToString(decode_type_t protocol) {
     case RC5: return "RC5";
     case RC6: return "RC6";
     case PANASONIC: return "PANASONIC";
+    case PANASONIC_AC: return "PANASONIC_AC";
     case LG: return "LG";
     case JVC: return "JVC";
     case SAMSUNG: return "SAMSUNG";
     case COOLIX: return "COOLIX";
+    case EPSON: return "EPSON";
     case UNKNOWN:
     default: return "UNKNOWN";
   }
