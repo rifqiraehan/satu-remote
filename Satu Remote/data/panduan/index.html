@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SatuRemote | Dokumentasi Pengguna</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background-color: #e5e7eb;
+            border-radius: 20px;
+        }
+        .sidebar-scroll:hover::-webkit-scrollbar-thumb {
+            background-color: #d1d5db;
+        }
+
+        .code-block {
+            background-color: #1e293b;
+            color: #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+
+        .nav-link.active {
+            color: #10b981;
+            border-left-color: #10b981;
+            background-color: #ecfdf5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 antialiased">
+    <nav class="fixed top-0 z-50 w-full bg-white border-b border-gray-200 backdrop-blur-lg bg-opacity-80">
+        <div class="px-3 py-3 lg:px-5 lg:pl-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center justify-start rtl:justify-end">
+                    <button id="sidebar-toggle" type="button" class="inline-flex items-center p-2 text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200">
+                        <span class="sr-only">Open sidebar</span>
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                    <a href="http://saturemote.local" class="flex ms-2 md:ms-4 items-center gap-2">
+                        <div class="w-7 h-7 rounded-lg flex items-center justify-center text-lg">
+                          <svg width="31" height="35" viewBox="0 0 31 35" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path
+                              d="M14.1736 14.0804C13.9331 14.983 13.6921 15.8856 13.4517 16.7882C14.4392 17.4365 15.5083 18.212 16.6106 19.135C17.6048 19.9674 18.4742 20.7922 19.2284 21.572C19.0828 20.6552 18.7185 19.1227 17.694 17.5105C16.4991 15.6309 15.0017 14.5788 14.1736 14.0804Z"
+                              fill="#006838" />
+                            <path
+                              d="M14.7981 12.5548C15.0125 11.6901 15.2269 10.8259 15.4413 9.96127C17.0117 10.8093 19.4018 12.3589 21.5747 15.0069C23.1575 16.9359 24.1142 18.8246 24.6942 20.2428C23.7062 20.4828 22.7187 20.7233 21.7307 20.9633C21.3328 19.823 20.6393 18.2521 19.4085 16.6314C17.7953 14.5075 15.9782 13.2439 14.7981 12.5548Z"
+                              fill="#009444" />
+                            <path
+                              d="M16.1641 7.8985C16.3728 7.00254 16.5815 6.10705 16.7902 5.21109C18.7074 5.93109 22.3174 7.58262 25.5456 11.1684C28.1818 14.0972 29.4615 17.0915 30.0848 18.9318C29.0356 19.187 27.9864 19.4421 26.9372 19.6973C26.5469 18.2037 25.7121 15.8161 23.8304 13.4251C21.0951 9.94893 17.7231 8.46909 16.1641 7.8985Z"
+                              fill="#39B54A" />
+                            <path
+                              d="M7.0379 3.65268C7.66796 5.09077 8.00111 6.6645 7.08296 8.44364C6.45591 8.74293 6.05085 9.1181 5.82317 9.36427C5.53052 9.68063 5.21889 10.0179 5.11929 10.5538C5.04909 10.9333 5.1136 11.2558 5.16909 11.4479C4.65256 10.9537 3.46339 10.0179 3.11619 8.44364C2.87286 7.34088 3.2538 6.35006 3.43641 6.00192C3.60527 5.67939 3.84385 5.42042 3.84385 5.42042C3.97808 5.2748 4.10757 5.16666 4.2086 5.09077C5.15154 4.61172 6.09448 4.1322 7.0379 3.65268Z"
+                              fill="#006838" />
+                            <path
+                              d="M15.331 27.08C15.5748 26.8253 15.7408 26.5801 15.847 26.4022C16.0766 26.6982 16.3797 27.1312 16.6657 27.6942C16.8645 28.0855 17.4225 28.3796 17.5278 28.8401C17.5805 29.0697 17.4099 30.0406 17.0333 30.9626C16.6263 31.9587 15.7968 32.5079 15.0099 32.8233C14.426 33.0576 13.5599 33.3697 12.4818 33.6249C10.9379 33.9911 9.7497 34.0537 8.21481 34.1172C6.00876 34.2083 3.95687 34.2652 2.07715 34.298C3.34073 29.3035 4.60431 24.3096 5.86789 19.3151C7.29274 20.2063 8.71806 21.0976 10.1429 21.9888C9.6776 23.4919 9.33467 24.8303 9.07996 25.9478C8.57814 28.1514 8.58667 28.759 8.93672 29.063C9.2953 29.3742 10.04 29.1963 11.5293 28.8401C11.9031 28.751 12.7208 28.5399 13.7022 28.1054C14.7016 27.6634 15.0848 27.3366 15.331 27.08Z"
+                              fill="#006838" />
+                            <path
+                              d="M16.1482 32.1668C16.4698 31.8471 17.1467 31.0802 17.2548 29.9698C17.3378 29.1213 17.0532 28.4321 16.7383 27.8288C15.4998 25.4563 13.5153 23.8807 12.7796 23.3049C10.4469 21.4802 8.68152 20.2655 7.92926 19.7348C2.93802 16.215 0.291803 14.3495 0.0204942 11.8139C-0.0544479 11.1124 -0.14267 8.54214 4.05741 5.21109C3.84302 5.41789 3.51242 5.78832 3.31937 6.32666C2.58655 8.37091 4.582 10.75 5.25126 11.5483C6.0391 12.4874 6.7852 13.0661 7.15944 13.3525C11.1247 16.389 13.2131 17.1285 16.4276 19.7974C18.3699 21.41 18.8907 22.2254 19.1805 22.767C19.5168 23.396 20.6362 25.4891 19.9029 27.9977C19.0781 30.8226 16.5405 31.9937 16.1482 32.1668Z"
+                              fill="#0FA64A" />
+                            <path
+                              d="M7.03626 3.65263C7.76197 3.23381 8.55028 2.72726 9.36848 2.11588C10.3313 1.39588 11.1467 0.671617 11.8259 0C13.3902 0.0298813 14.955 0.0602365 16.5193 0.0901178C15.0148 5.35538 13.5107 10.6202 12.0062 15.8854C10.744 14.9862 9.48184 14.0869 8.21968 13.1876C8.65179 11.4587 9.08437 9.7299 9.51647 8.00106C9.20484 7.95126 8.7106 7.91189 8.12767 8.03995C7.67659 8.13908 7.32323 8.30509 7.08085 8.44359C7.07421 7.7549 6.575 7.35318 6.56836 6.66448C6.5603 5.75619 7.0448 4.5614 7.03626 3.65263Z"
+                              fill="#006838" />
+                            <path
+                              d="M5.86789 19.3157C7.29274 20.2069 8.71806 21.0981 10.1429 21.9893C9.61737 23.5839 9.11317 25.4655 8.75174 27.5994C8.33718 30.0483 8.20864 32.2557 8.21481 34.1183C6.16908 34.1785 4.12288 34.2387 2.07715 34.299C3.34073 29.3041 4.60431 24.3096 5.86789 19.3157Z"
+                              fill="#006838" />
+                          </svg>
+                        </div>
+                        <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap text-green-600">Satu<span class="text-gray-900/90">Remote</span></span>
+                        <span class="hidden sm:inline-block bg-emerald-100 text-emerald-800 text-xs font-medium px-2.5 py-0.5 rounded border border-emerald-400">v1.0 Docs</span>
+                    </a>
+                </div>
+                <div class="flex items-center">
+                    <a href="http://saturemote.local" target="_blank" class="text-white bg-emerald-600 hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none hidden md:block">
+                        Buka Web App
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <aside id="logo-sidebar" class="fixed top-0 left-0 z-40 w-64 h-screen pt-20 transition-transform -translate-x-full bg-white border-r border-gray-200 lg:translate-x-0" aria-label="Sidebar">
+        <div class="h-full px-3 pb-4 overflow-y-auto bg-white sidebar-scroll">
+            <ul class="space-y-2 font-medium">
+                <li>
+                    <a href="#intro" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="book-open" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Tentang Produk</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#devices" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="monitor" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Perangkat Didukung</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#getting-started" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="rocket" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Langkah Awal</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#connection" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="wifi" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Koneksi WiFi</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#adding-device" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="plus-circle" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Tambah Perangkat</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#learning-mode" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="brain-circuit" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Mode Learning</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#settings" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="settings" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Pengaturan Jaringan</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#features" class="nav-link flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group border-l-4 border-transparent transition-all">
+                        <i data-lucide="sparkles" class="w-5 h-5 text-gray-500 transition duration-75 group-hover:text-gray-900"></i>
+                        <span class="ms-3">Fitur Tambahan</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-10 pt-6 border-t border-gray-200">
+                <div class="px-2">
+                    <h5 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Resources</h5>
+                    <a href="manual-book-satu-remote.pdf" download class="flex items-center text-sm text-gray-600 hover:text-emerald-600 mb-2">
+                      <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Download PDF Manual
+                    </a>
+                    <a href="#contact" class="flex items-center text-sm text-gray-600 hover:text-emerald-600">
+                        <i data-lucide="users" class="w-4 h-4 mr-2"></i> Kontak Tim
+                    </a>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <div class="p-4 lg:ml-64 pt-24 pb-20">
+        <main class="max-w-4xl mx-auto space-y-16">
+            <section id="intro" class="scroll-mt-28">
+                <div class="border-b pb-6 mb-6">
+                    <h1 class="text-4xl font-bold tracking-tight text-slate-900 mb-4">Tentang <span class="text-green-600">Satu</span><span class="text-gray-900/90">Remote</span></h1>
+                    <p class="text-lg text-slate-600 leading-relaxed">
+                        SatuRemote adalah sistem Remote Kontrol Universal berbasis <span class="text-emerald-600 font-semibold">ESP32</span> yang dirancang untuk menggantikan banyak remote elektronik di rumah Anda dengan satu perangkat terpusat yang praktis.
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-8 flex items-start gap-4">
+                    <i data-lucide="info" class="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"></i>
+                    <div>
+                        <h3 class="font-semibold text-blue-900">Satu Untuk Semua</h3>
+                        <p class="text-blue-800 text-sm mt-1">
+                            Perangkat ini mempelajari serta memancarkan ulang kode infrared (IR) dari berbagai remote asli, memungkinkan kontrol TV, AC, dan proyektor melalui aplikasi smartphone via Wi-Fi.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="devices" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center">
+                    <span class="bg-emerald-100 text-emerald-600 p-2 rounded-lg mr-3"><i data-lucide="layers"></i></span>
+                    Daftar Perangkat Elektronik
+                </h2>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4 text-emerald-600">
+                            <i data-lucide="tv" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Televisi</h3>
+                        <p class="text-sm text-gray-600">
+                            Remote universal mempelajari dan memancarkan ulang kode IR standar TV, sehingga TV mengenali perintah sama seperti remote asli.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4 text-emerald-600">
+                            <i data-lucide="thermometer-snowflake" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Air Conditioner</h3>
+                        <p class="text-sm text-gray-600">
+                            Merekam dan memancarkan ulang kode IR dari remote AC asli. AC merespons perintah tanpa perlu pengaturan tambahan pada unit AC.
+                        </p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mb-4 text-emerald-600">
+                            <i data-lucide="projector" class="w-6 h-6"></i>
+                        </div>
+                        <h3 class="font-bold text-lg mb-2">Proyektor</h3>
+                        <p class="text-sm text-gray-600">
+                            Mengontrol fungsi dasar seperti power, input, dan menu pada mayoritas proyektor yang menggunakan sinyal infrared standar.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="getting-started" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Langkah Umum Penggunaan</h2>
+                <div class="relative border-l border-gray-200 ml-4 space-y-10">
+                    <div class="mb-10 ml-8">
+                        <span class="absolute flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-full -left-4 ring-8 ring-white text-emerald-600 font-bold">1</span>
+                        <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900">Nyalakan Remote</h3>
+                        <p class="mb-4 text-base font-normal text-gray-500">Pastikan perangkat SatuRemote telah mendapatkan daya (power).</p>
+                    </div>
+                    <div class="mb-10 ml-8">
+                        <span class="absolute flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-full -left-4 ring-8 ring-white text-emerald-600 font-bold">2</span>
+                        <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900">Sambungkan WiFi</h3>
+                        <p class="text-base font-normal text-gray-500">Hubungkan smartphone Anda ke Access Point (AP) yang dipancarkan oleh SatuRemote.</p>
+                    </div>
+                    <div class="mb-10 ml-8">
+                        <span class="absolute flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-full -left-4 ring-8 ring-white text-emerald-600 font-bold">3</span>
+                        <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900">Buka Laman Web</h3>
+                        <p class="text-base font-normal text-gray-500">Akses alamat <code>saturemote.local</code> di browser Anda.</p>
+                    </div>
+                    <div class="mb-10 ml-8">
+                        <span class="absolute flex items-center justify-center w-8 h-8 bg-emerald-100 rounded-full -left-4 ring-8 ring-white text-emerald-600 font-bold">4</span>
+                        <h3 class="flex items-center mb-1 text-lg font-semibold text-gray-900">Pilih Perangkat & Kontrol</h3>
+                        <p class="text-base font-normal text-gray-500">Pilih device yang diinginkan, arahkan IR Blaster ke alat elektronik, dan tekan tombol virtual.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="connection" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center">
+                    <span class="bg-emerald-100 text-emerald-600 p-2 rounded-lg mr-3"><i data-lucide="wifi"></i></span>
+                    Koneksi WiFi & Akses Laman
+                </h2>
+
+                <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden mb-6">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4">1. Menghubungkan ke WiFi</h3>
+                        <p class="text-gray-600 mb-4">
+                            Saat SatuRemote dinyalakan, ia akan memancarkan sinyal WiFi. Buka pengaturan WiFi di HP Anda dan cari jaringan bernama <strong>SatuRemote</strong>.
+                        </p>
+
+                        <div class="bg-gray-800 text-gray-200 rounded-lg p-4 flex items-center justify-between">
+                            <div>
+                                <span class="text-xs text-gray-400 uppercase">Default Password</span>
+                                <div class="font-mono text-lg font-bold text-white">saturemote</div>
+                            </div>
+                            <button onclick="copyText('saturemote')" class="text-gray-400 hover:text-white transition">
+                                <i data-lucide="copy" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow border border-gray-200 overflow-hidden">
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-4">2. Mengakses Captive Portal</h3>
+                        <p class="text-gray-600 mb-4">
+                            Setelah terhubung, biasanya halaman akan terbuka otomatis (Captive Portal). Jika tidak, buka browser (Chrome/Safari) dan ketik alamat berikut:
+                        </p>
+                        <div class="code-block flex justify-between items-center">
+                            <code>http://saturemote.local</code>
+                            <i data-lucide="globe" class="w-4 h-4 text-gray-500"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="adding-device" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Menambahkan Perangkat Baru</h2>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 text-emerald-700">Opsi Template</h3>
+                        <p class="text-gray-600 mb-4">
+                            Pilih dari daftar merek yang sudah tersedia di database SatuRemote. Berikan nama yang unik untuk memudahkan identifikasi (contoh: "TV Ruang Tamu").
+                        </p>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1">
+                            <li>Buka Menu Tambah Perangkat</li>
+                            <li>Pilih Kategori (TV/AC/Proyektor)</li>
+                            <li>Cari Merek</li>
+                            <li>Simpan</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold mb-2 text-purple-700">Opsi Kustom</h3>
+                        <p class="text-gray-600 mb-4">
+                            Jika merek perangkat Anda tidak terdaftar, pilih opsi <strong>"Kustom"</strong>. Anda dapat menentukan tata letak tombol sendiri dan melakukan proses <em>Learning</em>.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="learning-mode" class="scroll-mt-28">
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-8 text-white relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-10">
+                        <i data-lucide="radio-receiver" class="w-32 h-32"></i>
+                    </div>
+
+                    <h2 class="text-3xl font-bold mb-4 text-white">Cara Learning Pada Remote</h2>
+                    <p class="text-slate-300 mb-6 max-w-xl">
+                        Fitur ini digunakan untuk "mengajarkan" SatuRemote kode IR dari remote asli Anda. Sangat berguna untuk perangkat dengan merek langka.
+                    </p>
+
+                    <div class="grid md:grid-cols-3 gap-4 text-slate-900">
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="text-emerald-600 font-bold text-xl mb-2">01</div>
+                            <div class="font-semibold mb-1">Siapkan Remote Asli</div>
+                            <p class="text-sm text-gray-600">Pastikan remote asli berfungsi dan memiliki baterai.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="text-emerald-600 font-bold text-xl mb-2">02</div>
+                            <div class="font-semibold mb-1">Buka Mode Learning</div>
+                            <p class="text-sm text-gray-600">Di aplikasi web, pilih tombol yang ingin diprogram, lalu aktifkan mode learning.</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg">
+                            <div class="text-emerald-600 font-bold text-xl mb-2">03</div>
+                            <div class="font-semibold mb-1">Tembakkan Sinyal</div>
+                            <p class="text-sm text-gray-600">Arahkan remote asli ke <strong>Receiver</strong> SatuRemote dan tekan tombol.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="settings" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center">
+                    <span class="bg-emerald-100 text-emerald-600 p-2 rounded-lg mr-3"><i data-lucide="settings"></i></span>
+                    Mengubah SSID & Password
+                </h2>
+                <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6">
+                    <p class="text-orange-700 font-medium">
+                        <i data-lucide="alert-triangle" class="inline w-4 h-4 mr-1"></i> Perhatian
+                    </p>
+                    <p class="text-sm text-orange-600 mt-1">
+                        Setelah mengubah pengaturan ini, SatuRemote akan melakukan <strong>Reboot</strong>. Anda harus menghubungkan ulang WiFi HP Anda ke nama jaringan (SSID) yang baru.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 shadow-sm border border-gray-200 hover:shadow-md transition rounded-xl">
+                    <ol class="space-y-4 text-gray-600 list-decimal list-inside">
+                        <li>Klik ikon garis tiga (Menu) di pojok kanan atas.</li>
+                        <li>Pilih opsi <strong>Pengaturan Jaringan</strong>.</li>
+                        <li>Masukkan <strong>SSID</strong> baru (Nama Jaringan).</li>
+                        <li>Masukkan <strong>Password</strong> baru (Minimal 8 Karakter).</li>
+                        <li>Tekan tombol <strong>Simpan dan Reboot</strong>.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section id="features" class="scroll-mt-28">
+                <h2 class="text-3xl font-bold text-slate-900 mb-6">Fitur Lainnya</h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="border border-gray-200 rounded-xl p-6 hover:border-emerald-500 transition cursor-default">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="bg-blue-100 p-2 rounded-lg text-blue-600">
+                                <i data-lucide="volume-2" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Temukan Perangkat</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            Lupa menaruh alat? Aktifkan toggle ini di menu. <strong>Buzzer</strong> pada SatuRemote akan berbunyi nyaring untuk membantu Anda menemukannya.
+                        </p>
+                    </div>
+
+                    <div class="border border-gray-200 rounded-xl p-6 hover:border-emerald-500 transition cursor-default">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="bg-purple-100 p-2 rounded-lg text-purple-600">
+                                <i data-lucide="database" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Backup & Restore</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm">
+                            Simpan konfigurasi remote Anda ke dalam file <code>.json</code>. Berguna untuk memindahkan data ke perangkat SatuRemote lain atau sebagai cadangan.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="contact" class="mt-20 border-t pt-10">
+                <div class="bg-slate-900 text-white rounded-2xl p-8 text-center">
+                    <h2 class="text-2xl font-bold mb-6">Kontak Kami</h2>
+                    <div class="flex flex-col md:flex-row justify-center gap-8 items-center">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="phone" class="text-emerald-400"></i>
+                            <span>+62 812 3599 4871</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="map-pin" class="text-emerald-400"></i>
+                            <span>Politeknik Elektronika Negeri Surabaya</span>
+                        </div>
+                    </div>
+                    <div class="mt-6 text-slate-400 text-sm">
+                        Praktikum Rekayasa Perangkat Lunak - 3 D4 Teknik Komputer A
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="lucide.min.js"></script>
+    <script>
+        lucide.createIcons();
+
+        function copyText(text) {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            alert('Password disalin ke clipboard: ' + text);
+        }
+
+        const sidebar = document.getElementById('logo-sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth < 1024) {
+                if (!sidebar.contains(e.target) && !toggleBtn.contains(e.target)) {
+                    sidebar.classList.add('-translate-x-full');
+                }
+            }
+        });
+
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('.nav-link');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 150)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').includes(current)) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
